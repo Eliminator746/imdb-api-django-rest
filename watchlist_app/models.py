@@ -9,10 +9,11 @@ class StreamPlatform(models.Model):
     def __str__(self):
         return self.name
     
-
+# A StreamPlatform (like Netflix, Amazon Prime) can have many WatchList (movies/shows).
 class WatchList (models.Model):
     title = models.CharField(max_length=500)
     storyline = models.CharField(max_length=200)
+    platform = models.ForeignKey(StreamPlatform, on_delete=models.CASCADE, related_name="watchlist", null=True)
     active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     
