@@ -1,8 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from watchlist_app.models import StreamPlatform, WatchList
-from watchlist_app.serializers import StreamPlatformSerializers, WatchListSerializers
+from rest_framework import generics
+from rest_framework import mixins
+from watchlist_app.models import Review, StreamPlatform, WatchList
+from watchlist_app.serializers import ReviewSerializers, StreamPlatformSerializers, WatchListSerializers
 
 # Complete list
 class MovieListAV(APIView):
@@ -97,3 +99,70 @@ class StreamPlatformDetailAV(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except StreamPlatform.DoesNotExist:
             return Response({'error': 'Platform not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+# Review System
+# ---------------------------------------------------------------------------------------------------------------------------------
+#                   User can see all the reviews of all movies
+# ---------------------------------------------------------------------------------------------------------------------------------
+class ReviewAV(generics.ListAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializers
+    
+# ---------------------------------------------------------------------------------------------------------------------------------
+#                   User can see all the reviews of a particular movie
+# ---------------------------------------------------------------------------------------------------------------------------------
+class ReviewDetailAV(generics.ListAPIView):
+    # queryset = Review.objects.all()
+    serializer_class = ReviewSerializers
+
+    def get_queryset(self):
+        pk= self.kwargs.get('pk')
+        return Review.objects.filter(watchlist=pk)
+
+# ---------------------------------------------------------------------------------------------------------------------------------
+#                   User can create a review for a particular movie, movie will be selected by default
+# ---------------------------------------------------------------------------------------------------------------------------------
+# 1. Get the pk from URL
+# 2. Find that review from Watchlist, which is a connected Modal
+# 3. Save it to watchlist, which is defined in Review Modal
+# ---------------------------------------------------------------------------------------------------------------------------------
+
+# Commented is wrong code       
+# class ReviewCreateAV(mixins.CreateModelMixin, generics.GenericAPIView):
+    
+#     serializer_class=ReviewSerializers
+    
+#     def post(self, request, *args, **kwargs):
+#         return self.create(request, *args, **kwargs)
+    
+#     def perform_create(self, serializer):
+#         pk= self.kwargs.get('pk')
+#         watchlist= WatchList.objects.get(pk=pk)
+#         print("watchlist ", watchlist)
+#         serializer.save(watchlist=watchlist)
+        
+class ReviewCreateAV(generics.CreateAPIView):
+    serializer_class= ReviewSerializers
+    
+    def perform_create(self, serializer):
+        pk = self.kwargs['pk']
+        movie = WatchList.objects.get(pk=pk)
+        serializer.save(watchlist = movie)        
+        
+# ---------------------------------------------------------------------------------------------------------------------------------
+#                   User can see a particular review. i.e only one review comment when you open that review
+# ---------------------------------------------------------------------------------------------------------------------------------
+        
+
+# Commented is wrong code       
+# class ReviewParticularAV(generics.ListAPIView):
+#     serializer_class = ReviewSerializers
+    
+#     def get_queryset(self):
+#         pk = self.kwargs.get('pk')
+#         return Review.objects.filter(pk=pk)
+
+
+class ReviewParticularAV(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializers
