@@ -1,12 +1,18 @@
-from django.urls import path
-from watchlist_app.api.views import MovieDetailAV, MovieListAV, ReviewAV, ReviewDetailAV, ReviewListAV, ReviewCreateAV, ReviewParticularAV, StreamPlatformDetailAV, StreamPlatformListAV
+from rest_framework.routers import DefaultRouter
+from django.urls import include, path
+from watchlist_app.api.views import MovieDetailAV, MovieListAV, ReviewAV, ReviewDetailAV, ReviewCreateAV, ReviewParticularAV, StreamPlatformDetailAV, StreamPlatformListAV, StreamPlatformAV
 
+# http://127.0.0.1:8000/watch/review/  -> review is same as what is written inside this r``
+router = DefaultRouter()
+router.register(r'stream', StreamPlatformAV, basename='streamplatform')
 
 urlpatterns = [
     path('list/', MovieListAV.as_view(), name="movie-list"),
     path('<int:pk>', MovieDetailAV.as_view(), name="movie-details"),
-    path('stream/', StreamPlatformListAV.as_view(), name='stream'),
-    path('stream/<int:pk>', StreamPlatformDetailAV.as_view(), name='stream-detail'),
+    
+    path('', include(router.urls)),
+    # path('stream/', StreamPlatformListAV.as_view(), name='stream'),
+    # path('stream/<int:pk>', StreamPlatformDetailAV.as_view(), name='stream-detail'),
     
     path('stream/review', ReviewAV.as_view(), name="review-list"),                                  # User can see all the reviews of all movies
     path('stream/<int:pk>/review', ReviewDetailAV.as_view(), name="review-detail"),                 # User can see all the reviews of a particular movie

@@ -2,7 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
-from rest_framework import mixins
+from rest_framework import viewsets
+from django.shortcuts import get_object_or_404
 from watchlist_app.models import Review, StreamPlatform, WatchList
 from watchlist_app.serializers import ReviewSerializers, StreamPlatformSerializers, WatchListSerializers
 
@@ -100,6 +101,36 @@ class StreamPlatformDetailAV(APIView):
         except StreamPlatform.DoesNotExist:
             return Response({'error': 'Platform not found'}, status=status.HTTP_404_NOT_FOUND)
         
+# ---------------------------------------------------------------------------------------------------------------------------------
+#                  ViewSet : CRUD [ old way ]
+# ---------------------------------------------------------------------------------------------------------------------------------  
+# class StreamPlatformAV(viewsets.ViewSet):
+#     def list(self, request):
+#         queryset = StreamPlatform.objects.all()
+#         serializer = StreamPlatformSerializers(queryset, many=True)
+#         return Response(serializer.data)
+
+#     def retrieve(self, request, pk=None):
+#         queryset = StreamPlatform.objects.all()
+#         watchlist = get_object_or_404(queryset, pk=pk)
+#         serializer = StreamPlatformSerializers(watchlist)
+#         return Response(serializer.data)
+    
+#     def create(self, request):
+#         serializer = StreamPlatformSerializers(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+#         return Response(serializer.errors)
+      
+# ---------------------------------------------------------------------------------------------------------------------------------
+#                  ModelViewSet : CRUD [ least code ]
+# ---------------------------------------------------------------------------------------------------------------------------------  
+class StreamPlatformAV(viewsets.ModelViewSet):
+    queryset = StreamPlatform.objects.all()
+    serializer_class = StreamPlatformSerializers            
+# ---------------------------------------------------------------------------------------------------------------------------------  
+
 # Review System
 # ---------------------------------------------------------------------------------------------------------------------------------
 #                   User can see all the reviews of all movies

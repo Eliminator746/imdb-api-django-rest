@@ -29,7 +29,7 @@ class StreamPlatformSerializers(serializers.ModelSerializer):
         fields = '__all__'
     
     def validate(self, data):
-        if len(data['title']) < 2:
-            raise serializers.ValidationError({"title": "Title must be at least 2 characters long."})
+        if len(data['name']) < 2:
+            raise serializers.ValidationError({"name": "name must be at least 2 characters long."})
         return data
     
