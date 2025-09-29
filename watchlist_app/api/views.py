@@ -3,7 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+from watchlist_app.api.permissions import AdminOrReadOnly, ReviewUserOrReadOnly
 from watchlist_app.models import Review, StreamPlatform, WatchList
 from watchlist_app.serializers import ReviewSerializers, StreamPlatformSerializers, WatchListSerializers
 
@@ -57,6 +60,8 @@ class MovieDetailAV(APIView):
 # Complete List        
 
 class StreamPlatformListAV(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request):
         platform = StreamPlatform.objects.all()
         serializer = StreamPlatformSerializers(platform, many=True)
@@ -155,7 +160,8 @@ class ReviewDetailAV(generics.ListAPIView):
 # ---------------------------------------------------------------------------------------------------------------------------------
 # 1. Get the pk from URL
 # 2. Find that review from Watchlist, which is a connected Modal
-# 3. Save it to watchlist, which is defined in Review Modal
+# 3. Checks if user has reviewed THIS specific movie - [EDGE CASES]
+# 4. Save it to watchlist, which is defined in Review Modal
 # ---------------------------------------------------------------------------------------------------------------------------------
 
 # Commented is wrong code       
@@ -174,11 +180,26 @@ class ReviewDetailAV(generics.ListAPIView):
         
 class ReviewCreateAV(generics.CreateAPIView):
     serializer_class= ReviewSerializers
+    permission_classes= [IsAuthenticated]
+    
+    def get_queryset(self):
+        return Review.objects.all()
+
     
     def perform_create(self, serializer):
         pk = self.kwargs['pk']
         movie = WatchList.objects.get(pk=pk)
-        serializer.save(watchlist = movie)        
+        review_user=self.request.user
+        
+        # Checks if user has reviewed THIS specific movie
+        review_queryset = Review.objects.filter(
+            watchlist=movie,
+            review_user=review_user
+        )
+        
+        if review_queryset.exists():
+            raise ValidationError("You've already reviewed this show!")
+        serializer.save(watchlist = movie, review_user = review_user)        
         
 # ---------------------------------------------------------------------------------------------------------------------------------
 #                   User can see a particular review. i.e only one review comment when you open that review
@@ -195,5 +216,6 @@ class ReviewCreateAV(generics.CreateAPIView):
 
 
 class ReviewParticularAV(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [ReviewUserOrReadOnly]
     queryset = Review.objects.all()
     serializer_class = ReviewSerializers
