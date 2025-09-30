@@ -188,7 +188,10 @@ class ReviewCreateAV(generics.CreateAPIView):
     
     def perform_create(self, serializer):
         pk = self.kwargs['pk']
-        movie = WatchList.objects.get(pk=pk)
+        try:
+            movie = WatchList.objects.get(pk=pk)
+        except WatchList.DoesNotExist:
+            raise ValidationError(f"WatchList with ID {pk} does not exist!")
         review_user=self.request.user
         
         # Checks if user has reviewed THIS specific movie
@@ -199,6 +202,17 @@ class ReviewCreateAV(generics.CreateAPIView):
         
         if review_queryset.exists():
             raise ValidationError("You've already reviewed this show!")
+        
+        # Adding review count + avg here
+        rating = serializer.validated_data['rating']
+        if movie.number_rating == 0:
+            movie.avg_rating = rating
+        else:
+            total =  (movie.avg_rating * movie.number_rating) + rating
+            movie.avg_rating = total / (movie.number_rating + 1)
+        
+        movie.number_rating = movie.number_rating + 1
+        movie.save()
         serializer.save(watchlist = movie, review_user = review_user)        
         
 # ---------------------------------------------------------------------------------------------------------------------------------
@@ -219,3 +233,27 @@ class ReviewParticularAV(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [ReviewUserOrReadOnly]
     queryset = Review.objects.all()
     serializer_class = ReviewSerializers
+    
+    def perform_update(self, serializer):
+        # pk = self.kwargs['pk']
+        # movie = Review.objects.get(pk=pk).watchlist     
+         
+        review = serializer.instance       # Review being updated
+        movie = review.watchlist           # Related WatchList
+        
+        print(serializer)
+        print("----------")
+        print(review)
+        print("----------")
+        print(movie)
+        
+        old_rating = review.rating
+        new_rating = serializer.validated_data['rating']
+    
+        total = movie.review_avg * movie.review_count
+        total = total - old_rating + new_rating
+        movie.review_avg = total / movie.review_count
+        
+        movie.save()
+        # serializer.save(watchlist = movie, review_user =' review_user')
+        serializer.save()
