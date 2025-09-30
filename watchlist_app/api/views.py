@@ -250,9 +250,9 @@ class ReviewParticularAV(generics.RetrieveUpdateDestroyAPIView):
         old_rating = review.rating
         new_rating = serializer.validated_data['rating']
     
-        total = movie.review_avg * movie.review_count
+        total = movie.avg_rating * movie.number_rating
         total = total - old_rating + new_rating
-        movie.review_avg = total / movie.review_count
+        movie.avg_rating = total / movie.number_rating
         
         movie.save()
         # serializer.save(watchlist = movie, review_user =' review_user')
