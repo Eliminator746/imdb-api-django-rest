@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+# from rest_framework_simplejwt.tokens import RefreshToken
 from user_app import models
 
 class RegistrationVS(generics.CreateAPIView):
@@ -24,6 +25,13 @@ class RegistrationVS(generics.CreateAPIView):
         
         # Generate token automatically -> We do via using signal
         token = Token.objects.get(user=account)
+        
+        # refresh = RefreshToken.for_user(account)
+        # data['token'] = {
+        #                     'refresh': str(refresh),
+        #                     'access': str(refresh.access_token),
+        #                 }
+        
         data['token'] = token.key
         return Response(data, status=status.HTTP_201_CREATED)
 

@@ -12,6 +12,7 @@ from watchlist_app.serializers import ReviewSerializers, StreamPlatformSerialize
 
 # Complete list
 class MovieListAV(APIView):
+    permission_classes = [AdminOrReadOnly]
     
     def get(self, request):
         movies= WatchList.objects.all()
@@ -28,6 +29,7 @@ class MovieListAV(APIView):
 
 # Individual list    
 class MovieDetailAV(APIView):  
+    permission_classes = [AdminOrReadOnly]
       
     def get(self, request, pk):
         try:
@@ -60,7 +62,7 @@ class MovieDetailAV(APIView):
 # Complete List        
 
 class StreamPlatformListAV(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AdminOrReadOnly]
     
     def get(self, request):
         platform = StreamPlatform.objects.all()
@@ -76,6 +78,7 @@ class StreamPlatformListAV(APIView):
         return Response(serializer.errors)
 
 class StreamPlatformDetailAV(APIView):
+    permission_classes = [AdminOrReadOnly]
     
     def get(self, request, pk):
         try:
@@ -132,6 +135,8 @@ class StreamPlatformDetailAV(APIView):
 #                  ModelViewSet : CRUD [ least code ]
 # ---------------------------------------------------------------------------------------------------------------------------------  
 class StreamPlatformAV(viewsets.ModelViewSet):
+    permission_classes = [AdminOrReadOnly]
+    
     queryset = StreamPlatform.objects.all()
     serializer_class = StreamPlatformSerializers            
 # ---------------------------------------------------------------------------------------------------------------------------------  
