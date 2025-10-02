@@ -10,6 +10,16 @@ from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from watchlist_app.api.permissions import AdminOrReadOnly, ReviewUserOrReadOnly
 from watchlist_app.models import Review, StreamPlatform, WatchList
 from watchlist_app.serializers import ReviewSerializers, StreamPlatformSerializers, WatchListSerializers
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+
+class UserReview(generics.ListAPIView):
+    serializer_class = ReviewSerializers
+    
+    def get_queryset(self):
+        username = self.request.query_params.get('username', None)
+        return Review.objects.filter(review_user__username=username)
+
 
 # Complete list
 class MovieListAV(APIView):
@@ -142,6 +152,14 @@ class StreamPlatformAV(viewsets.ModelViewSet):
     serializer_class = StreamPlatformSerializers            
 # ---------------------------------------------------------------------------------------------------------------------------------  
 
+class WatchListAV(generics.ListAPIView):
+    queryset = WatchList.objects.all()
+    serializer_class = WatchListSerializers
+    # filter_backends = [filters.SearchFilter]
+    # search_fields = ['title', 'platform__name']
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['avg_rating']
+
 # Review System
 # ---------------------------------------------------------------------------------------------------------------------------------
 #                   User can see all the reviews of all movies
@@ -149,7 +167,9 @@ class StreamPlatformAV(viewsets.ModelViewSet):
 class ReviewAV(generics.ListAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializers
-    
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['review_user__username', 'active']
+
 # ---------------------------------------------------------------------------------------------------------------------------------
 #                   User can see all the reviews of a particular movie
 # ---------------------------------------------------------------------------------------------------------------------------------
