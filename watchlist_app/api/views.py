@@ -5,7 +5,8 @@ from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+# from watchlist_app.api.throttling import ReviewListThrottle, ReviewParticularThrottle
 from watchlist_app.api.permissions import AdminOrReadOnly, ReviewUserOrReadOnly
 from watchlist_app.models import Review, StreamPlatform, WatchList
 from watchlist_app.serializers import ReviewSerializers, StreamPlatformSerializers, WatchListSerializers
@@ -152,9 +153,10 @@ class ReviewAV(generics.ListAPIView):
 # ---------------------------------------------------------------------------------------------------------------------------------
 #                   User can see all the reviews of a particular movie
 # ---------------------------------------------------------------------------------------------------------------------------------
-class ReviewDetailAV(generics.ListAPIView):
+class ReviewListAV(generics.ListAPIView):
     # queryset = Review.objects.all()
     serializer_class = ReviewSerializers
+    throttle_classes = [AnonRateThrottle, UserRateThrottle]
 
     def get_queryset(self):
         pk= self.kwargs.get('pk')
@@ -168,20 +170,6 @@ class ReviewDetailAV(generics.ListAPIView):
 # 3. Checks if user has reviewed THIS specific movie - [EDGE CASES]
 # 4. Save it to watchlist, which is defined in Review Modal
 # ---------------------------------------------------------------------------------------------------------------------------------
-
-# Commented is wrong code       
-# class ReviewCreateAV(mixins.CreateModelMixin, generics.GenericAPIView):
-    
-#     serializer_class=ReviewSerializers
-    
-#     def post(self, request, *args, **kwargs):
-#         return self.create(request, *args, **kwargs)
-    
-#     def perform_create(self, serializer):
-#         pk= self.kwargs.get('pk')
-#         watchlist= WatchList.objects.get(pk=pk)
-#         print("watchlist ", watchlist)
-#         serializer.save(watchlist=watchlist)
         
 class ReviewCreateAV(generics.CreateAPIView):
     serializer_class= ReviewSerializers
@@ -223,19 +211,12 @@ class ReviewCreateAV(generics.CreateAPIView):
 # ---------------------------------------------------------------------------------------------------------------------------------
 #                   User can see a particular review. i.e only one review comment when you open that review
 # ---------------------------------------------------------------------------------------------------------------------------------
-        
-
-# Commented is wrong code       
-# class ReviewParticularAV(generics.ListAPIView):
-#     serializer_class = ReviewSerializers
-    
-#     def get_queryset(self):
-#         pk = self.kwargs.get('pk')
-#         return Review.objects.filter(pk=pk)
-
 
 class ReviewParticularAV(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [ReviewUserOrReadOnly]
+    throttle_classes = [AnonRateThrottle, UserRateThrottle]
+    # throttle_classes = [ReviewParticularThrottle]
+
     queryset = Review.objects.all()
     serializer_class = ReviewSerializers
     
