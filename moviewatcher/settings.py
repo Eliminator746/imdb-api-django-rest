@@ -147,7 +147,17 @@ REST_FRAMEWORK = {
         'user': '5/day',
         'review-specific': '2/day',
         'review-detail': '5/day',
-    }
+    },
+    
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    # 'PAGE_SIZE': 2,
+    
+    # Disable this while development, but for production enable it
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    
+    
 }
 
 SIMPLE_JWT = {

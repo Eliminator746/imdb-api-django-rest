@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 # from watchlist_app.api.throttling import ReviewListThrottle, ReviewParticularThrottle
+from watchlist_app.api.pagination import MovieListCPagination, MovieListLOPagination, MovieListPagination
 from watchlist_app.api.permissions import AdminOrReadOnly, ReviewUserOrReadOnly
 from watchlist_app.models import Review, StreamPlatform, WatchList
 from watchlist_app.serializers import ReviewSerializers, StreamPlatformSerializers, WatchListSerializers
@@ -24,7 +25,6 @@ class UserReview(generics.ListAPIView):
 # Complete list
 class MovieListAV(APIView):
     permission_classes = [AdminOrReadOnly]
-    
     def get(self, request):
         movies= WatchList.objects.all()
         serializer=WatchListSerializers(movies, many=True)
@@ -159,6 +159,9 @@ class WatchListAV(generics.ListAPIView):
     # search_fields = ['title', 'platform__name']
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['avg_rating']
+    # pagination_class = MovieListPagination
+    pagination_class = MovieListCPagination
+
 
 # Review System
 # ---------------------------------------------------------------------------------------------------------------------------------
