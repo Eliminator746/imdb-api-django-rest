@@ -67,7 +67,7 @@ class MovieDetailAV(APIView):
     def delete(self, request, pk):
         movie= WatchList.objects.get(pk=pk)
         movie.delete()
-        return Response()
+        return Response( "Movie deleted",status=status.HTTP_200_OK)
      
 # StreamPlatform
 # Complete List        
@@ -250,11 +250,11 @@ class ReviewParticularAV(generics.RetrieveUpdateDestroyAPIView):
         review = serializer.instance       # Review being updated
         movie = review.watchlist           # Related WatchList
         
-        print(serializer)
-        print("----------")
-        print(review)
-        print("----------")
-        print(movie)
+        # print(serializer)
+        # print("----------")
+        # print(review)
+        # print("----------")
+        # print(movie)
         
         old_rating = review.rating
         new_rating = serializer.validated_data['rating']
